@@ -101,15 +101,15 @@ function GameFlow(playerOneName = 'Player One', playerTwoName = 'Player Two') {
 
             if (checkWinner()) {
                 board.printBoard();
-                console.log(`${getActivePlayer().name} wins!`)
-                resetGame();
-                return;
+                const message = `${getActivePlayer().name} wins!`;
+                return { message, gameOver: true };
             }
 
             switchPlayerTurn();
             printNewRound()
+            return { message: '', gameOver: false };
         } else {
-            return console.log(`This cell is occupied!`)
+            return { message: 'occupied', gameOver: false };
         }
     };
 
@@ -122,6 +122,13 @@ function ScreenController() {
     const game = GameFlow();
     const playerTurn = document.getElementById('active-player');
     const boardContainer = document.getElementById('board');
+    const newGameButton = document.getElementById('new-game');
+    const gameOverScreen = document.getElementById('gameover-screen');
+    const errorMessage = document.getElementById('error-message');
+
+    const updateMessage = (message) => {
+        gameOverScreen.textContent = message;
+    };
 
     const updateScreen = () => {
         boardContainer.innerHTML = '';
@@ -129,7 +136,9 @@ function ScreenController() {
         const board = game.getBoard();
         const activePlayer = game.getActivePlayer();
 
-        playerTurn.textContent = `${activePlayer.name}'s turn...`
+        playerTurn.textContent = `${activePlayer.name}'s turn...`;
+
+        newGameButton.disabled = true;
 
         board.forEach((row, cellRow) => {
             row.forEach((cell, cellColumn) => {
@@ -149,13 +158,40 @@ function ScreenController() {
 
         if (!selectedColumn && !selectedRow) return;
 
-        game.playRound(selectedRow, selectedColumn);
+        const result = game.playRound(selectedRow, selectedColumn);
+
+        if (result.message === 'occupied') {
+            errorMessage.textContent = 'This cell is occupied!';
+        } else {
+            errorMessage.textContent = '';
+        }
+
+        if (result.gameOver) {
+            boardContainer.classList.toggle('disabled');
+            updateMessage(result.message);
+            gameOverScreen.classList.toggle('toggle-visibility');
+            updateScreen();
+            playerTurn.textContent = '';
+            newGameButton.disabled = false;
+            return;
+        }
+
         updateScreen();
     }
 
-    boardContainer.addEventListener('click', clickHandlerBoard)
+    function newGameButtonHandler() {
+        game.resetGame();
+        boardContainer.classList.toggle('disabled');
+        gameOverScreen.classList.toggle('toggle-visibility');
+        updateMessage('');
+        updateScreen();
+    }
+
+    boardContainer.addEventListener('click', clickHandlerBoard);
+    newGameButton.addEventListener('click', newGameButtonHandler);
 
     updateScreen();
+    updateMessage('');
 }
 
 ScreenController();
