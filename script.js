@@ -115,7 +115,47 @@ function GameFlow(playerOneName = 'Player One', playerTwoName = 'Player Two') {
 
     printNewRound();
 
-    return { playRound, getActivePlayer, resetGame }
+    return { playRound, getActivePlayer, resetGame, getBoard: board.getBoard }
 }
 
-const game = GameFlow();
+function ScreenController() {
+    const game = GameFlow();
+    const playerTurn = document.getElementById('active-player');
+    const boardContainer = document.getElementById('board');
+
+    const updateScreen = () => {
+        boardContainer.innerHTML = '';
+
+        const board = game.getBoard();
+        const activePlayer = game.getActivePlayer();
+
+        playerTurn.textContent = `${activePlayer.name}'s turn...`
+
+        board.forEach((row, cellRow) => {
+            row.forEach((cell, cellColumn) => {
+                const cellButton = document.createElement('button');
+                cellButton.classList.add('cell');
+                cellButton.dataset.row = cellRow;
+                cellButton.dataset.column = cellColumn;
+                cellButton.textContent = cell.getCellValue();
+                boardContainer.appendChild(cellButton);
+            });
+        });
+    };
+
+    function clickHandlerBoard(e) {
+        const selectedColumn = e.target.dataset.column;
+        const selectedRow = e.target.dataset.row;
+
+        if (!selectedColumn && !selectedRow) return;
+
+        game.playRound(selectedRow, selectedColumn);
+        updateScreen();
+    }
+
+    boardContainer.addEventListener('click', clickHandlerBoard)
+
+    updateScreen();
+}
+
+ScreenController();
