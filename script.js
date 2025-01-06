@@ -69,44 +69,58 @@ function GameFlow(playerOneName = 'Player One', playerTwoName = 'Player Two') {
     const checkWinner = () => {
         const b = board.getBoard().map(row => row.map(cell => cell.getCellValue()));
         const currentToken = activePlayer.token;
-
+    
         // Check rows
         for (let i = 0; i < 3; i++) {
             if (b[i][0] === currentToken && b[i][1] === currentToken && b[i][2] === currentToken) {
-                return true;
+                return { winner: true, draw: false };
             }
         }
-
+    
         // Check columns
         for (let i = 0; i < 3; i++) {
             if (b[0][i] === currentToken && b[1][i] === currentToken && b[2][i] === currentToken) {
-                return true;
+                return { winner: true, draw: false };
             }
         }
-
+    
         // Check diagonals
         if (b[0][0] === currentToken && b[1][1] === currentToken && b[2][2] === currentToken) {
-            return true;
+            return { winner: true, draw: false };
         }
         if (b[0][2] === currentToken && b[1][1] === currentToken && b[2][0] === currentToken) {
-            return true;
+            return { winner: true, draw: false };
         }
-
-        return false;
+    
+        // Check for draw
+        const allCellsFilled = b.every(row => row.every(cell => cell !== ''));
+        if (allCellsFilled) {
+            return { winner: false, draw: true };
+        }
+    
+        // No winner or draw
+        return { winner: false, draw: false };
     };
 
     const playRound = (row, column) => {
         if (board.getBoard()[row][column].getCellValue() === '') {
             board.getBoard()[row][column].setCellValue(activePlayer.token);
-
-            if (checkWinner()) {
+    
+            const result = checkWinner();
+            if (result.winner) {
                 board.printBoard();
                 const message = `${getActivePlayer().name} wins!`;
                 return { message, gameOver: true };
             }
-
+    
+            if (result.draw) {
+                board.printBoard();
+                const message = 'It\'s a draw!';
+                return { message, gameOver: true };
+            }
+    
             switchPlayerTurn();
-            printNewRound()
+            printNewRound();
             return { message: '', gameOver: false };
         } else {
             return { message: 'occupied', gameOver: false };
