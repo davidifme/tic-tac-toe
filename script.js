@@ -12,16 +12,11 @@ function Gameboard() {
 
     const getBoard = () => board;
 
-    const printBoard = () => {
-        const boardWithCellValues = board.map((row) => row.map((cell) => cell.getCellValue()));
-        console.log(boardWithCellValues);
-    }
-
     const clearBoard = () => {
         board.map(row => row.map(cell => cell.setCellValue('')));
     };
 
-    return { getBoard, printBoard, clearBoard }
+    return { getBoard, clearBoard }
 }
 
 function Cell() {
@@ -55,11 +50,6 @@ function GameFlow(playerOneName = 'Player One', playerTwoName = 'Player Two') {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
       };
     const getActivePlayer = () => activePlayer;
-
-    const printNewRound = () => {
-        board.printBoard();
-        console.log(`${getActivePlayer().name}'s turn.`)
-    }
 
     const resetGame = () => {
         board.clearBoard();
@@ -108,26 +98,21 @@ function GameFlow(playerOneName = 'Player One', playerTwoName = 'Player Two') {
     
             const result = checkWinner();
             if (result.winner) {
-                board.printBoard();
                 const message = `${getActivePlayer().name} wins!`;
                 return { message, gameOver: true };
             }
     
             if (result.draw) {
-                board.printBoard();
                 const message = 'It\'s a draw!';
                 return { message, gameOver: true };
             }
     
             switchPlayerTurn();
-            printNewRound();
             return { message: '', gameOver: false };
         } else {
             return { message: 'occupied', gameOver: false };
         }
     };
-
-    printNewRound();
 
     return { playRound, getActivePlayer, resetGame, getBoard: board.getBoard }
 }
